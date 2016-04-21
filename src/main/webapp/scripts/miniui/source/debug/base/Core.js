@@ -1,3 +1,8 @@
+/*
+ * 使用 jsDuck 工具生成帮助文档：
+ * jsduck /D/myeclipse_workspace/jquery-miniui/src/main/webapp/scripts/miniui/source/debug --output /C/Users/hemin/Desktop/out --external=jQuery,Document
+ */
+
 /**
  * MiniUI 的全局变量。别名为 nui
  * @class
@@ -4864,8 +4869,14 @@ mini.CheckColumn = function(column) {
                 c.fire("checkall")
             }
         },
-        __OnSelectionChanged : function(j) {
-            var b = j.sender;
+        /**
+         * 改变选中事件的处理方法
+         * @param {Object} evt 事件对象
+         * @member mini.CheckColumn
+         * @private
+         */
+        __OnSelectionChanged : function(evt) {
+            var b = evt.sender;
             var d = b.toArray();
             var k = this;
             for (var g = 0, f = d.length; g < f; g++) {
@@ -4884,11 +4895,17 @@ mini.CheckColumn = function(column) {
                 }, 10)
             }
         },
-        _doCheckState : function(c) {
-            var e = c.uid + "checkall";
+        /**
+         * 设置选中状态
+         * @param {Object} checkbox 多选框
+         * @member mini.CheckColumn
+         * @private
+         */
+        _doCheckState : function(checkbox) {
+            var e = checkbox.uid + "checkall";
             var b = document.getElementById(e);
-            if (b && c._getSelectAllCheckState) {
-                var d = c._getSelectAllCheckState();
+            if (b && checkbox._getSelectAllCheckState) {
+                var d = checkbox._getSelectAllCheckState();
                 if (d == "has") {
                     b.indeterminate = true;
                     b.checked = true
@@ -4901,42 +4918,97 @@ mini.CheckColumn = function(column) {
     }, column)
 };
 mini._Columns.checkcolumn = mini.CheckColumn;
-mini.ExpandColumn = function(a) {
+
+/**
+ * 可以展开的列
+ * @class mini.ExpandColumn
+ * @constructor
+ * @param column 普通列
+ */
+mini.ExpandColumn = function(column) {
     return mini.copyTo({
+        /**
+         * @cfg {Number} [width=30] 宽度 
+         * @accessor
+         * @member mini.ExpandColumn
+         */
         width : 30,
+        /**
+         * @cfg {String} [headerAlign="center"] 表头对齐方式
+         * @accessor
+         * @member mini.ExpandColumn
+         */
         headerAlign : "center",
+        /**
+         * @cfg {String} [align="center"] 对齐方式
+         * @accessor
+         * @member mini.ExpandColumn
+         */
         align : "center",
+        /**
+         * @cfg {Boolean} [draggable=false] 是否可以拖拽
+         * @accessor
+         * @member mini.ExpandColumn
+         */
         draggable : false,
+        /**
+         * @cfg {String} [cellStyle="padding:0"] 单元格样式 
+         * @accessor
+         * @member mini.ExpandColumn
+         */
         cellStyle : "padding:0",
+        /**
+         * @cfg {String} [cellCls="mini-grid-expandCell"] 单元格样式类 
+         * @accessor
+         * @member mini.ExpandColumn
+         */
         cellCls : "mini-grid-expandCell",
+        /**
+         * @cfg {Boolean} [hideable=true] 是否可隐藏
+         * @accessor
+         * @member mini.ExpandColumn
+         */
         hideable : true,
-        renderer : function(b) {
-            return '<a class="mini-grid-ecIcon" href="javascript:#" onclick="return false"></a>'
-        },
-        init : function(b) {
-            b.on("cellclick", this.__OnCellClick, this)
+        /**
+         * 渲染单元格的显示内容
+         * @param {Object} evt 事件对象
+         * @member mini.ExpandColumn
+         */
+        renderer : function(evt) {
+            return '<column class="mini-grid-ecIcon" href="javascript:#" onclick="return false"></column>'
         },
         /**
-                     * 
- * @fires render
- * @fires render
-                     */
-        __OnCellClick : function(d) {
-            var c = d.sender;
-            if (d.column == this && c.isShowRowDetail) {
-                if (mini.findParent(d.htmlEvent.target,
+         * 初始化
+         * @param  {mini.DataGrid} grid 数据表格
+         * @member mini.ExpandColumn
+         */
+        init : function(grid) {
+            grid.on("cellclick", this.__OnCellClick, this)
+        },
+        /**
+         * 单元格点击事件的处理方法
+         * @param {Object} evt 事件对象
+         * @member mini.ExpandColumn
+         * @private
+         * @fires beforeshowrowdetail
+         * @fires beforehiderowdetail
+         */
+        __OnCellClick : function(evt) {
+            var c = evt.sender;
+            if (evt.column == this && c.isShowRowDetail) {
+                if (mini.findParent(evt.htmlEvent.target,
                         "mini-grid-ecIcon")) {
-                    var b = c.isShowRowDetail(d.record);
+                    var b = c.isShowRowDetail(evt.record);
                     if (!b) {
-                        d.cancel = false;
-                        c.fire("beforeshowrowdetail", d);
-                        if (d.cancel === true) {
+                        evt.cancel = false;
+                        c.fire("beforeshowrowdetail", evt);
+                        if (evt.cancel === true) {
                             return
                         }
                     } else {
-                        d.cancel = false;
-                        c.fire("beforehiderowdetail", d);
-                        if (d.cancel === true) {
+                        evt.cancel = false;
+                        c.fire("beforehiderowdetail", evt);
+                        if (evt.cancel === true) {
                             return
                         }
                     }
@@ -4944,77 +5016,130 @@ mini.ExpandColumn = function(a) {
                         c.hideAllRowDetail()
                     }
                     if (b) {
-                        c.hideRowDetail(d.record)
+                        c.hideRowDetail(evt.record)
                     } else {
-                        c.showRowDetail(d.record)
+                        c.showRowDetail(evt.record)
                     }
                 }
             }
         }
-    }, a)
+    }, column)
 };
 mini._Columns.expandcolumn = mini.ExpandColumn;
-mini.CheckBoxColumn = function(a) {
+
+/**
+ * 多选框列
+ * @class mini.CheckBoxColumn
+ * @constructor
+ * @param column 普通列
+ */
+mini.CheckBoxColumn = function(column) {
     return mini.copyTo({
+        /**
+         * @property {String} [_type="checkboxcolumn"] 列类型
+         * @member mini.CheckBoxColumn
+         * @private
+         */
         _type : "checkboxcolumn",
+        /**
+         * @cfg {String} [header=""] 表头
+         * @accessor
+         * @member mini.CheckBoxColumn
+         */
         header : "",
+        /**
+         * @cfg {String} [headerAlign="center"] 表头对齐方式
+         * @accessor
+         * @member mini.CheckBoxColumn
+         */
         headerAlign : "center",
+        /**
+         * @cfg {String} [cellCls="mini-checkcolumn"] 单元格样式类 
+         * @accessor
+         * @member mini.CheckBoxColumn
+         */
         cellCls : "mini-checkcolumn",
+        /**
+         * @cfg {Boolean} [trueValue=true] 真值
+         * @accessor
+         * @member mini.CheckBoxColumn
+         */
         trueValue : true,
+        /**
+         * @cfg {Boolean} [falseValue=false] 假值
+         * @accessor
+         * @member mini.CheckBoxColumn
+         */
         falseValue : false,
+        /**
+         * @cfg {Boolean} [readOnly=false] 是否只读
+         * @accessor
+         * @member mini.CheckBoxColumn
+         */
         readOnly : false,
+        /**
+         * 获取选择列单元格的 id
+         * @param  b
+         * @param  c
+         * @member mini.CheckBoxColumn
+         */
         getCheckId : function(b, c) {
-            return this._gridUID + "$checkbox$"
-                    + b[this._rowIdField] + "$" + c._id
+            return this._gridUID + "$checkbox$" + b[this._rowIdField] + "$" + c._id
         },
+        /**
+         * 获取多选框的 DOM 节点
+         * @param  b
+         * @param  c
+         * @member mini.CheckBoxColumn
+         */
         getCheckBoxEl : function(b, c) {
-            return document.getElementById(this
-                    .getCheckId(b, c))
+            return document.getElementById(this.getCheckId(b, c))
         },
-        renderer : function(f) {
-            var g = this.getCheckId(f.record, f.column);
-            var b = mini._getMap(f.field, f.record);
+        /**
+         * 渲染单元格的显示内容
+         * @param {Object} evt 事件对象
+         * @member mini.CheckBoxColumn
+         */
+        renderer : function(evt) {
+            var g = this.getCheckId(evt.record, evt.column);
+            var b = mini._getMap(evt.field, evt.record);
             var d = b == this.trueValue ? true : false;
             var c = "checkbox";
-            return '<input type="'
-                    + c
-                    + '" id="'
-                    + g
-                    + '" '
-                    + (d ? "checked" : "")
-                    + ' hidefocus style="outline:none;" onclick="return false;"/>'
+            return '<input type="' + c + '" id="' + g + '" ' + (d ? "checked" : "") + ' hidefocus style="outline:none;" onclick="return false;"/>'
         },
-        init : function(e) {
-            this.grid = e;
-            //@fires render
+        /**
+         * 初始化
+         * @param  {mini.DataGrid} grid 数据表格
+         * @member mini.CheckBoxColumn
+         */
+        init : function(grid) {
+            this.grid = grid;
+            
             function b(i) {
-                if (e.isReadOnly() || this.readOnly) {
+                if (grid.isReadOnly() || this.readOnly) {
                     return
                 }
                 i.value = mini._getMap(i.field, i.record);
-                e.fire("cellbeginedit", i);
+                grid.fire("cellbeginedit", i);
                 if (i.cancel !== true) {
                     var g = mini._getMap(i.column.field,
                             i.record);
                     var h = g == this.trueValue ? this.falseValue
                             : this.trueValue;
-                    if (e._OnCellCommitEdit) {
-                        e._OnCellCommitEdit(i.record, i.column,
+                    if (grid._OnCellCommitEdit) {
+                        grid._OnCellCommitEdit(i.record, i.column,
                                 h);
-                        e._OnCellEndEdit(i.record, i.column)
+                        grid._OnCellEndEdit(i.record, i.column)
                     }
                 }
             }
-            /**
-                         * 
- * @fires render
-                         */
+            
             function d(h) {
                 if (h.column == this) {
                     var i = this.getCheckId(h.record, h.column);
                     var g = h.htmlEvent.target;
                     if (g.id == i) {
-                        if (e.allowCellEdit) {
+                        if (grid.allowCellEdit) {
                             h.cancel = false;
                             b.call(this, h)
                         } else {
@@ -5023,12 +5148,12 @@ mini.CheckBoxColumn = function(a) {
                             }
                             h.value = mini._getMap(
                                     h.column.field, h.record);
-                            e.fire("cellbeginedit", h);
+                            grid.fire("cellbeginedit", h);
                             if (h.cancel == true) {
                                 return
                             }
-                            if (e.isEditingRow
-                                    && e.isEditingRow(h.record)) {
+                            if (grid.isEditingRow
+                                    && grid.isEditingRow(h.record)) {
                                 setTimeout(function() {
                                     g.checked = !g.checked
                                 }, 1)
@@ -5037,10 +5162,10 @@ mini.CheckBoxColumn = function(a) {
                     }
                 }
             }
-            e.on("cellclick", d, this);
+            grid.on("cellclick", d, this);
             mini.on(this.grid.el, "keydown", function(h) {
-                if (h.keyCode == 32 && e.allowCellEdit) {
-                    var i = e.getCurrentCell();
+                if (h.keyCode == 32 && grid.allowCellEdit) {
+                    var i = grid.getCurrentCell();
                     if (!i) {
                         return
                     }
@@ -5064,61 +5189,116 @@ mini.CheckBoxColumn = function(a) {
                 this.falseValue = f
             }
         }
-    }, a)
+    }, column)
 };
 mini._Columns.checkboxcolumn = mini.CheckBoxColumn;
-mini.RadioButtonColumn = function(a) {
+
+/**
+ * 单选框列
+ * @class mini.RadioButtonColumn
+ * @constructor
+ * @param column 普通列
+ */
+mini.RadioButtonColumn = function(column) {
     return mini.copyTo({
+        /**
+         * @property {String} [_type="radiobuttoncolumn"] 列类型
+         * @member mini.RadioButtonColumn
+         * @private
+         */
         _type : "radiobuttoncolumn",
+        /**
+         * @cfg {String} [header=""] 表头
+         * @accessor
+         * @member mini.RadioButtonColumn
+         */
         header : "",
+        /**
+         * @cfg {String} [headerAlign="center"] 表头对齐方式
+         * @accessor
+         * @member mini.RadioButtonColumn
+         */
         headerAlign : "center",
+        /**
+         * @cfg {String} [cellCls="mini-checkcolumn"] 单元格样式类 
+         * @accessor
+         * @member mini.RadioButtonColumn
+         */
         cellCls : "mini-checkcolumn",
+        /**
+         * @cfg {Boolean} [trueValue=true] 真值
+         * @accessor
+         * @member mini.RadioButtonColumn
+         */
         trueValue : true,
+        /**
+         * @cfg {Boolean} [falseValue=false] 假值
+         * @accessor
+         * @member mini.RadioButtonColumn
+         */
         falseValue : false,
+        /**
+         * @cfg {Boolean} [readOnly=false] 是否只读
+         * @accessor
+         * @member mini.RadioButtonColumn
+         */
         readOnly : false,
+        /**
+         * 获取选择列单元格的 id
+         * @param  b
+         * @param  c
+         * @member mini.RadioButtonColumn
+         */
         getCheckId : function(b, c) {
-            return this._gridUID + "$radio$"
-                    + b[this._rowIdField] + "$" + c._id
+            return this._gridUID + "$radio$" + b[this._rowIdField] + "$" + c._id
         },
+        /**
+         * 获取单选框的 DOM 节点
+         * @param  b
+         * @param  c
+         * @member mini.RadioButtonColumn
+         */
         getCheckBoxEl : function(b, c) {
-            return document.getElementById(this
-                    .getCheckId(b, c))
+            return document.getElementById(this.getCheckId(b, c))
         },
-        renderer : function(g) {
-            var b = g.sender;
-            var d = this.getCheckId(g.record, g.column);
-            var j = mini._getMap(g.field, g.record);
+        /**
+         * 渲染单元格的显示内容
+         * @param {Object} evt 事件对象
+         * @member mini.RadioButtonColumn
+         */
+        renderer : function(evt) {
+            var b = evt.sender;
+            var d = this.getCheckId(evt.record, evt.column);
+            var j = mini._getMap(evt.field, evt.record);
             var i = j == this.trueValue ? true : false;
             var h = "radio";
-            var c = b._id + g.column.field;
+            var c = b._id + evt.column.field;
             var f = "";
             var k = '<div style="position:relative;">';
-            k += '<input name="'
-                    + c
-                    + '" type="'
-                    + h
-                    + '" id="'
-                    + d
-                    + '" '
-                    + (i ? "checked" : "")
+            k += '<input name="' + c + '" type="' + h + '" id="' + d + '" ' + (i ? "checked" : "")
                     + ' hidefocus style="outline:none;" onclick="return false;" style="position:relative;z-index:1;"/>';
             if (!b.allowCellEdit) {
-                if (!b.isEditingRow(g.record)) {
+                if (!b.isEditingRow(evt.record)) {
                     k += '<div class="mini-grid-radio-mask"></div>'
                 }
             }
             k += "</div>";
             return k
         },
-        init : function(e) {
-            this.grid = e;
+        /**
+         * 初始化
+         * @param  {mini.DataGrid} grid 数据表格
+         * @member mini.RadioButtonColumn
+         */
+        init : function(grid) {
+            this.grid = grid;
             //@fires render
             function b(n) {
-                if (e.isReadOnly() || this.readOnly) {
+                if (grid.isReadOnly() || this.readOnly) {
                     return
                 }
                 n.value = mini._getMap(n.field, n.record);
-                e.fire("cellbeginedit", n);
+                grid.fire("cellbeginedit", n);
                 if (n.cancel !== true) {
                     var h = mini._getMap(n.column.field,
                             n.record);
@@ -5127,7 +5307,7 @@ mini.RadioButtonColumn = function(a) {
                     }
                     var m = h == this.trueValue ? this.falseValue
                             : this.trueValue;
-                    var k = e.getData();
+                    var k = grid.getData();
                     for (var j = 0, g = k.length; j < g; j++) {
                         var o = k[j];
                         if (o == n.record) {
@@ -5135,12 +5315,12 @@ mini.RadioButtonColumn = function(a) {
                         }
                         var h = mini._getMap(n.column.field, o);
                         if (h != this.falseValue) {
-                            e.updateRow(o, n.column.field,
+                            grid.updateRow(o, n.column.field,
                                     this.falseValue)
                         }
                     }
-                    if (e._OnCellCommitEdit) {
-                        e._OnCellCommitEdit(n.record, n.column,
+                    if (grid._OnCellCommitEdit) {
+                        grid._OnCellCommitEdit(n.record, n.column,
                                 m)
                     }
                 }
@@ -5150,17 +5330,17 @@ mini.RadioButtonColumn = function(a) {
                     var j = this.getCheckId(i.record, i.column);
                     var g = i.htmlEvent.target;
                     if (g.id == j) {
-                        if (e.allowCellEdit) {
+                        if (grid.allowCellEdit) {
                             i.cancel = false;
                             b.call(this, i)
                         } else {
-                            if (e.isEditingRow
-                                    && e.isEditingRow(i.record)) {
+                            if (grid.isEditingRow
+                                    && grid.isEditingRow(i.record)) {
                                 var h = this;
                                 setTimeout(
                                         function() {
                                             g.checked = true;
-                                            var p = e.getData();
+                                            var p = grid.getData();
                                             for (var n = 0, k = p.length; n < k; n++) {
                                                 var s = p[n];
                                                 if (s == i.record) {
@@ -5173,13 +5353,13 @@ mini.RadioButtonColumn = function(a) {
                                                                 s);
                                                 if (m != h.falseValue) {
                                                     if (s != i.record) {
-                                                        if (e._dataSource) {
+                                                        if (grid._dataSource) {
                                                             mini
                                                                     ._setMap(
                                                                             i.column.field,
                                                                             h.falseValue,
                                                                             s);
-                                                            e._dataSource
+                                                            grid._dataSource
                                                                     ._setModified(
                                                                             s,
                                                                             q,
@@ -5191,7 +5371,7 @@ mini.RadioButtonColumn = function(a) {
                                                                             q,
                                                                             h.falseValue,
                                                                             r);
-                                                            e
+                                                            grid
                                                                     ._doUpdateRow(
                                                                             s,
                                                                             r)
@@ -5205,10 +5385,10 @@ mini.RadioButtonColumn = function(a) {
                     }
                 }
             }
-            e.on("cellclick", d, this);
+            grid.on("cellclick", d, this);
             mini.on(this.grid.el, "keydown", function(h) {
-                if (h.keyCode == 32 && e.allowCellEdit) {
-                    var i = e.getCurrentCell();
+                if (h.keyCode == 32 && grid.allowCellEdit) {
+                    var i = grid.getCurrentCell();
                     if (!i) {
                         return
                     }
@@ -5232,17 +5412,28 @@ mini.RadioButtonColumn = function(a) {
                 this.falseValue = f
             }
         }
-    }, a)
+    }, column)
 };
 mini._Columns.radiobuttoncolumn = mini.RadioButtonColumn;
-mini.ComboBoxColumn = function(a) {
+/**
+ * 下拉框列
+ * @class mini.ComboBoxColumn
+ * @constructor
+ * @param column 普通列
+ */
+mini.ComboBoxColumn = function(column) {
     return mini.copyTo({
-        renderer : function(p) {
-            var q = !mini.isNull(p.value) ? String(p.value) : "";
+        /**
+         * 渲染单元格的显示内容
+         * @param {Object} evt 事件对象
+         * @member mini.ComboBoxColumn
+         */
+        renderer : function(evt) {
+            var q = !mini.isNull(evt.value) ? String(evt.value) : "";
             var r = q.split(",");
             var t = "id", h = "text";
             var j = {};
-            var n = p.column.editor;
+            var n = evt.column.editor;
             if (n && n.type == "combobox") {
                 var d = this.__editor;
                 if (!d) {
@@ -5281,21 +5472,39 @@ mini.ComboBoxColumn = function(a) {
             }
             return f.join(",")
         }
-    }, a)
+    }, column)
 };
 mini._Columns.comboboxcolumn = mini.ComboBoxColumn;
-mini._Resizer = function(a) {
-    this.owner = a;
+
+/**
+ * 尺寸调整类
+ * @class mini._Resizer
+ * @constructor
+ * @param owner 要调整尺寸的控件
+ * @private
+ */
+mini._Resizer = function(owner) {
+    this.owner = owner;
     mini.on(this.owner.el, "mousedown", this.__OnMouseDown, this)
 };
 mini._Resizer.prototype = {
-    __OnMouseDown : function(c) {
-        var a = mini.hasClass(c.target, "mini-resizer-trigger");
+    /**
+     * 鼠标按下事件的处理方法
+     * @param evt 事件对象
+     * @private
+     */
+    __OnMouseDown : function(evt) {
+        var a = mini.hasClass(evt.target, "mini-resizer-trigger");
         if (a && this.owner.allowResize) {
             var b = this._getResizeDrag();
-            b.start(c)
+            b.start(evt)
         }
     },
+    /**
+     * 获取调整尺寸的拖拽元素
+     * @returns {HTMLElement} 拖拽元素
+     * @private
+     */
     _getResizeDrag : function() {
         if (!this._resizeDragger) {
             this._resizeDragger = new mini.Drag({
@@ -5307,19 +5516,27 @@ mini._Resizer.prototype = {
         }
         return this._resizeDragger
     },
-    _OnDragStart : function(a) {
-        this.mask = mini.append(document.body,
-                '<div class="mini-resizer-mask mini-fixed"></div>');
-        this.proxy = mini.append(document.body,
-                '<div class="mini-resizer-proxy"></div>');
+    /**
+     * 拖拽开始事件的处理方法
+     * @param evt 事件对象
+     * @private
+     */
+    _OnDragStart : function(evt) {
+        this.mask = mini.append(document.body, '<div class="mini-resizer-mask mini-fixed"></div>');
+        this.proxy = mini.append(document.body, '<div class="mini-resizer-proxy"></div>');
         this.proxy.style.cursor = "se-resize";
         this.elBox = mini.getBox(this.owner.el);
         mini.setBox(this.proxy, this.elBox)
     },
-    _OnDragMove : function(e) {
+    /**
+     * 拖拽事件的处理方法
+     * @param evt 事件对象
+     * @private
+     */
+    _OnDragMove : function(evt) {
         var b = this.owner;
-        var d = e.now[0] - e.init[0];
-        var f = e.now[1] - e.init[1];
+        var d = evt.now[0] - evt.init[0];
+        var f = evt.now[1] - evt.init[1];
         var a = this.elBox.width + d;
         var c = this.elBox.height + f;
         if (a < b.minWidth) {
@@ -5337,12 +5554,13 @@ mini._Resizer.prototype = {
         mini.setSize(this.proxy, a, c)
     },
     /**
-     * 
-     * @fires render
-     * @param a
-     * @param c
+     * 拖拽结束事件的处理方法
+     * @param evt 事件对象
+     * @param {Boolean} c
+     * @private
+     * @fires resize
      */
-    _OnDragStop : function(a, c) {
+    _OnDragStop : function(evt, c) {
         if (!this.proxy) {
             return
         }
@@ -5358,7 +5576,18 @@ mini._Resizer.prototype = {
         }
     }
 };
+
+/**
+ * @property {mini.Window} [_topWindow=null] 顶层弹出窗口
+ * @member mini
+ * @private
+ */
 mini._topWindow = null;
+/**
+ * 获取顶层弹出窗口
+ * @member mini
+ * @private
+ */
 mini._getTopWindow = function(a) {
     if (mini._topWindow) {
         return mini._topWindow
@@ -5387,7 +5616,17 @@ if (__ps._winid) {
 }
 mini._WindowID = "w" + Math.floor(Math.random() * 10000);
 mini._getTopWindow()[mini._WindowID] = window;
+
+/**
+ * @property {Number} [__IFrameCreateCount=1] 创建的 iframe 个数的计数器
+ * @member mini
+ * @private
+ */
 mini.__IFrameCreateCount = 1;
+/**
+ * 创建的 iframe
+ * @member mini
+ */
 mini.createIFrame = function(c, j) {
     var d = "__iframe_onload" + mini.__IFrameCreateCount++;
     window[d] = e;
@@ -5455,6 +5694,11 @@ mini.createIFrame = function(c, j) {
     };
     return g
 };
+/**
+ * 打开弹出窗口
+ * @member mini
+ * @private
+ */
 mini._doOpen = function(c) {
     if (typeof c == "string") {
         c = {
@@ -5592,16 +5836,16 @@ mini.open = function(options) {
  */
 mini.openTop = mini.open;
 
-mini._getResult = function(a, b, g, f, e, k) {
+mini._getResult = function(url, data, successCallback, errorCallback, type, k) {
     var i = null;
-    var h = mini.getText(a, b, function(m, l) {
+    var h = mini.getText(url, data, function(m, l) {
         i = l;
-        if (g) {
-            if (g) {
-                g(m, l)
+        if (successCallback) {
+            if (successCallback) {
+                successCallback(m, l)
             }
         }
-    }, f, e);
+    }, errorCallback, type);
     var c = {
         text : h,
         result : null,
@@ -5609,9 +5853,9 @@ mini._getResult = function(a, b, g, f, e, k) {
             type : ""
         },
         options : {
-            url : a,
-            data : b,
-            type : e
+            url : url,
+            data : data,
+            type : type
         },
         xhr : i
     };
@@ -5624,7 +5868,7 @@ mini._getResult = function(a, b, g, f, e, k) {
         }
     } catch (d) {
         if (mini_debugger == true) {
-            alert(a + "\njson is error")
+            alert(url + "\njson is error")
         }
     }
     if (!mini.isArray(j) && k) {
@@ -5637,40 +5881,78 @@ mini._getResult = function(a, b, g, f, e, k) {
     }
     return j ? j.data : null
 };
-mini.getData = function(b, g, f, a, c) {
-    var e = mini.getText(b, g, f, a, c);
-    var d = mini.decode(e);
-    return d
+/**
+ * 通过 HTTP 请求载入 JSON 数据
+ * @param {String} url 发送请求地址
+ * @param {Object} [data] 待发送 Key/value 参数
+ * @param {Funcation} [successCallback] 请求成功的回调函数
+ * @param {String} successCallback.text 请求到的文本数据
+ * @param {Object} successCallback.jqXHR jQuery 的 XMLHttpRequest 对象
+ * @param {Function} [errorCallback] 请求错误的回调函数
+ * @param {Object} errorCallback.jqXHR jQuery 的 XMLHttpRequest 对象
+ * @param {String} errorCallback.textStatus 错误信息，除了得到 null 之外，还可能是 "timeout", "error", "notmodified" 和 "parsererror"。
+ * @param {Error} errorCallback.errorThrown 错误对象，通常 textStatus 和 errorThrown 之中只有一个会包含信息
+ * @param {String} [type="get"] 请求方式
+ * @member mini
+ */
+mini.getData = function(url, data, successCallback, errorCallback, type) {
+    var text = mini.getText(url, data, successCallback, errorCallback, type);
+    var data = mini.decode(text);
+    return data
 };
-mini.getText = function(b, f, e, a, c) {
+/**
+ * 通过 HTTP 请求载入文本数据
+ * @param {String} url 发送请求地址
+ * @param {Object} [data] 待发送 Key/value 参数
+ * @param {Funcation} [successCallback] 请求成功的回调函数
+ * @param {String} successCallback.text 请求到的文本数据
+ * @param {Object} successCallback.jqXHR jQuery 的 XMLHttpRequest 对象
+ * @param {Function} [errorCallback] 请求错误的回调函数
+ * @param {Object} errorCallback.jqXHR jQuery 的 XMLHttpRequest 对象
+ * @param {String} errorCallback.textStatus 错误信息，除了得到 null 之外，还可能是 "timeout", "error", "notmodified" 和 "parsererror"。
+ * @param {Error} errorCallback.errorThrown 错误对象，通常 textStatus 和 errorThrown 之中只有一个会包含信息
+ * @param {String} [type="get"] 请求方式
+ * @member mini
+ */
+mini.getText = function(url, data, successCallback, errorCallback, type) {
     var d = null;
     mini.ajax({
-        url : b,
-        data : f,
+        url : url,
+        data : data,
         async : false,
-        type : c ? c : "get",
+        type : type ? type : "get",
         cache : false,
         dataType : "text",
-        success : function(h, i, g) {
-            d = h;
-            if (e) {
-                e(h, g)
+        success : function(text, textStatus, jqXHR) {
+            d = text;
+            if (successCallback) {
+                successCallback(text, jqXHR)
             }
         },
-        error : a
+        error : errorCallback
     });
     return d
 };
+/**
+ * @property {String} [mini_RootPath="/"] 上下文根路径
+ * @member Window
+ */
 if (!window.mini_RootPath) {
     mini_RootPath = "/"
 }
-mini_CreateJSPath = function(g) {
+/**
+ * 获取 js 文件的绝对路径
+ * @param {String} jsPath javascript 文件路径（相对于上下文根路径）
+ * @returns {String} js 文件的绝对路径
+ * @member Window
+ */
+mini_CreateJSPath = function(jsPath) {
     var a = document.getElementsByTagName("script");
     var f = "";
     for (var e = 0, b = a.length; e < b; e++) {
         var h = a[e].src;
-        if (h.indexOf(g) != -1) {
-            var d = h.split(g);
+        if (h.indexOf(jsPath) != -1) {
+            var d = h.split(jsPath);
             f = d[0];
             break
         }
@@ -5686,50 +5968,85 @@ mini_CreateJSPath = function(g) {
     }
     return f
 };
+/**
+ * @property {String} mini_JSPath miniui.js 的绝对路径
+ * @member Window
+ */
 if (!window.mini_JSPath) {
     mini_JSPath = mini_CreateJSPath("miniui.js")
 }
-mini.update = function(a, c) {
-    if (typeof a == "string") {
-        a = {
-            url : a
+/**
+ * 更新控件
+ * @param {mini.Control/String} control miniUI 控件或加载数据的 URL
+ * @param {Type} [el] 控件对应的 DOM 节点
+ * @member mini
+ */
+mini.update = function(control, el) {
+    if (typeof control == "string") {
+        control = {
+            url : control
         }
     }
-    if (c) {
-        a.el = c
+    if (el) {
+        control.el = el
     }
-    var b = mini.loadText(a.url);
-    mini.innerHTML(a.el, b);
-    mini.parse(a.el)
+    var b = mini.loadText(control.url);
+    mini.innerHTML(control.el, b);
+    mini.parse(control.el)
 };
-mini.createSingle = function(a) {
-    if (typeof a == "string") {
-        a = mini.getClass(a)
+/**
+ * 创建类的单例
+ * @param {Function/String} clazz 类定义或是类名
+ * @returns {Object} 单例对象
+ */
+mini.createSingle = function(clazz) {
+    if (typeof clazz == "string") {
+        clazz = mini.getClass(clazz)
     }
-    if (typeof a != "function") {
+    if (typeof clazz != "function") {
         return
     }
-    var b = a.single;
+    var b = clazz.single;
     if (!b) {
-        b = a.single = new a()
+        b = clazz.single = new clazz()
     }
     return b
 };
-mini.createTopSingle = function(b) {
-    if (typeof b != "function") {
+/**
+ * 在顶级窗口中创建类的单例
+ * @param {Function} clazz 类定义或是类名
+ * @returns {Object} 单例对象
+ */
+mini.createTopSingle = function(clazz) {
+    if (typeof clazz != "function") {
         return
     }
-    var a = b.prototype.type;
+    var a = clazz.prototype.type;
     if (top && top != window && top.mini && top.mini.getClass(a)) {
         return top.mini.createSingle(a)
     } else {
-        return mini.createSingle(b)
+        return mini.createSingle(clazz)
     }
 };
+
+/**
+ * 排序方式
+ * @enum {Function} mini.sortTypes
+ */
 mini.sortTypes = {
+    /**
+     * 字符串
+     * @param a
+     * @returns
+     */
     string : function(a) {
         return String(a).toUpperCase()
     },
+    /**
+     * 日期
+     * @param a
+     * @returns
+     */
     date : function(a) {
         if (!a) {
             return 0
@@ -5739,19 +6056,39 @@ mini.sortTypes = {
         }
         return mini.parseDate(String(a))
     },
+    /**
+     * 浮点型数字
+     * @param a
+     * @returns
+     */
     "float" : function(a) {
         var b = parseFloat(String(a).replace(/,/g, ""));
         return isNaN(b) ? 0 : b
     },
+    /**
+     * 整形数字
+     * @param a
+     * @returns
+     */
     "int" : function(a) {
         var b = parseInt(String(a).replace(/,/g, ""), 10);
         return isNaN(b) ? 0 : b
     },
+    /**
+     * 金额
+     * @param a
+     * @returns
+     */
     currency : function(a) {
         var b = parseFloat(String(a).replace(/,/g, ""));
         return isNaN(b) ? 0 : b
     }
 };
+/**
+ * _ValidateVType
+ * @member mini
+ * @private
+ */
 mini._ValidateVType = function(b, k, d, p) {
     var j = b.split(";");
     for (var c = 0, a = j.length; c < a; c++) {
@@ -5778,6 +6115,11 @@ mini._ValidateVType = function(b, k, d, p) {
         }
     }
 };
+/**
+ * _getErrorText
+ * @member mini
+ * @private
+ */
 mini._getErrorText = function(b, a) {
     if (b && b[a]) {
         return b[a]
@@ -5785,6 +6127,11 @@ mini._getErrorText = function(b, a) {
         return mini.VTypes[a]
     }
 };
+/**
+ * 校验类型
+ * @class mini.VTypes
+ * @singleton
+ */
 mini.VTypes = {
     minDateErrorText : "Date can not be less than {0}",
     maxDateErrorText : "Date can not be greater than {0}",
